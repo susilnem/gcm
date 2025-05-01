@@ -6,11 +6,13 @@ on:
       - main
       - develop
       - feature/*
+      - v*.*.*
   pull_request:
     branches:
       - main
       - develop
       - project/*
+      - v*.*.*
   workflow_dispatch:
 
 permissions:
@@ -28,7 +30,12 @@ jobs:
       - name: Setup GO
         uses: actions/setup-go@v5
         with:
-          go-version: v1.24.2
+          go-version-file: "go.mod"
+
+      - name: Dependency check
+        run: |
+          go mod verify
+          go mod download
 
       - name: GO lint
         uses: golangci/golangci-lint-action@v7
