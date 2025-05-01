@@ -1,0 +1,36 @@
+name: CI test
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/*
+  pull_request:
+    branches:
+      - main
+      - develop
+      - project/*
+  workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+  precommitcheck:
+    name: Pre-commit check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@main
+      - uses: pre-commit/action@main
+
+      - name: Setup GO
+        uses: actions/setup-go@v5
+        with:
+          go-version: v1.24.2
+
+      - name: GO lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.0
