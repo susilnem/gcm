@@ -1,0 +1,45 @@
+name: Code Quality
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature
+      - v*.*.*
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feature
+      - v*.*.*
+
+  schedule:
+    - cron: '30 1 * * 0' # Weekly Sunday
+
+permissions:
+  actions: read
+
+jobs:
+  codequalitycheck:
+    name: Codeql
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@main
+
+      - name: Initialize CodeqL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go
+          queries: security-and-quality
+
+      - name: Setup GO
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Codeql Analysis
+        uses: github/codeql-action/analyze@v3

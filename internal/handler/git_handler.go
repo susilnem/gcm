@@ -26,7 +26,9 @@ func AddFiles(c *cli.Context) error {
 			Message: "Select files to stage:",
 			Options: changedFiles,
 		}
-		survey.AskOne(prompt, &selectedFiles)
+		if err := survey.AskOne(prompt, &selectedFiles); err != nil {
+			return err
+		}
 
 		if len(selectedFiles) == 0 {
 			fmt.Println("No files selected")
@@ -45,19 +47,25 @@ func CreateCommit(c *cli.Context) error {
 		Message: "Select commit type:",
 		Options: commitTypes,
 	}
-	survey.AskOne(promptType, &commitType)
+	if err := survey.AskOne(promptType, &commitType); err != nil {
+		return err
+	}
 
 	var scope string
 	promptScope := &survey.Input{
 		Message: "Enter scope (optional, e.g., 'ci', 'database'):",
 	}
-	survey.AskOne(promptScope, &scope)
+	if err := survey.AskOne(promptScope, &scope); err != nil {
+		return err
+	}
 
 	var message string
 	promptMessage := &survey.Input{
 		Message: "Enter commit message:",
 	}
-	survey.AskOne(promptMessage, &message)
+	if err := survey.AskOne(promptMessage, &message); err != nil {
+		return err
+	}
 
 	commitMsg := commitType
 	if scope != "" {

@@ -10,6 +10,7 @@ import (
 
 func Execute() {
 	app := &cli.App{
+		Version: Version,
 		Name:  "gcm",
 		Usage: "Git Conventional Commit Manager",
 		Commands: []*cli.Command{
