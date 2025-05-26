@@ -110,3 +110,8 @@ func ShowTypeRecommendations(c *cli.Context) error {
 	}
 	return nil
 }
+
+// ShowDiff displays the diff of staged Changes
+func ShowDiff(c *cli.Context) error {
+	return RunGitCommand("diff", "--cached")
+}

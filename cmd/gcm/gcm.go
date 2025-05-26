@@ -44,6 +44,12 @@ func Execute() {
 				Usage:  "Show the last commit message",
 				Action: handler.ShowTypeRecommendations,
 			},
+			{
+				Name: "diff",
+				Aliases: []string{"d"},
+				Usage: "Show the diff of staged changes",
+				Action: handler.ShowDiff,
+			},
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
