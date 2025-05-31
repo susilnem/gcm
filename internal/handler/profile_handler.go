@@ -60,13 +60,13 @@ func SaveProfiles(store ProfileStore) error {
 	if err != nil {
 		return err
 	}
-	
+
 	// Ensure the directory exists
 	data, err := json.MarshalIndent(store, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal profiles: %w", err)
 	}
-	
+
 	if err := os.WriteFile(profilePath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write profile file: %w", err)
 	}
@@ -80,7 +80,7 @@ func AddProfile(c *cli.Context) error {
 	email := c.Args().Get(2)
 
 	if profileName == "" || userName == "" || email == "" {
-		return fmt.Errorf("profile name, user name, and email are required")
+		return fmt.Errorf("profile name, username, and email are required")
 	}
 	store, err := LoadProfiles()
 	if err != nil {
@@ -105,7 +105,7 @@ func AddProfile(c *cli.Context) error {
 	return nil
 }
 
-// ListProfiles lists all profiles in the profile store 
+// ListProfiles lists all profiles in the profile store
 func ListProfiles(c *cli.Context) error {
 	store, err := LoadProfiles()
 	if err != nil {
@@ -124,7 +124,7 @@ func ListProfiles(c *cli.Context) error {
 	return nil
 }
 
-// UseProfile switches to a specified profile 
+// UseProfile switches to a specified profile
 func UseProfile(c *cli.Context) error {
 	profileName := c.Args().Get(0)
 	isGlobal := c.Bool("global")
