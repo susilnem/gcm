@@ -27,7 +27,9 @@ func setupTestProfileFile(t *testing.T, content string) string {
 		if err := os.Remove(profilePath); err != nil && !os.IsNotExist(err) {
 			t.Fatalf("Failed to remove test profile file: %v", err)
 		}
-		os.Setenv("HOME", originalHome)
+		if err := os.Setenv("HOME", originalHome); err != nil {
+			t.Fatalf("Failed to restore original HOME environment variable: %v", err)
+		}
 	})
 
 	return profilePath
@@ -75,12 +77,14 @@ func TestAddProfile(t *testing.T) {
 	set.String("profile", "work", "")
 	set.String("name", "John Doe", "")
 	set.String("email", "john@work.com", "")
-	set.Parse([]string{"work", "John Doe", "john@work.com"})
-
+	err := set.Parse([]string{"work", "John Doe", "john@work.com"})
+	if err != nil {
+		t.Fatalf("Failed to parse flags: %v", err)
+	}
 	app := cli.NewApp()
 	ctx := cli.NewContext(app, set, nil)
 
-	err := AddProfile(ctx)
+	err = AddProfile(ctx)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -116,12 +120,14 @@ func TestAddDuplicateProfile(t *testing.T) {
 	set.String("profile", "work", "")
 	set.String("name", "John Doe", "")
 	set.String("email", "john@work.com", "")
-	set.Parse([]string{"work", "John Doe", "john@work.com"})
-
+	err := set.Parse([]string{"work", "John Doe", "john@work.com"})
+	if err != nil {
+		t.Fatalf("Failed to parse flags: %v", err)
+	}
 	app := cli.NewApp()
 	ctx := cli.NewContext(app, set, nil)
 
-	err := AddProfile(ctx)
+	err = AddProfile(ctx)
 	if err == nil || err.Error() != "profile 'work' already exists" {
 		t.Fatalf("Expected error for duplicate profile, got %v", err)
 	}
@@ -136,12 +142,14 @@ func TestRemoveProfile(t *testing.T) {
 	set.String("profile", "work", "")
 	set.String("name", "John Doe", "")
 	set.String("email", "john@work.com", "")
-	set.Parse([]string{"work", "John Doe", "john@work.com"})
-
+	err := set.Parse([]string{"work", "John Doe", "john@work.com"})
+	if err != nil {
+		t.Fatalf("Failed to parse flags: %v", err)
+	}
 	app := cli.NewApp()
 	ctx := cli.NewContext(app, set, nil)
 
-	err := RemoveProfile(ctx)
+	err = RemoveProfile(ctx)
 
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)

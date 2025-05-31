@@ -10,3 +10,8 @@ repos:
       - id: check-yaml
       - id: check-case-conflict
       - id: detect-private-key
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+      - id: go-unit-tests

@@ -15,7 +15,6 @@ func RunGitCommand(args ...string) error {
 	return cmd.Run()
 }
 
-
 func getChangedFiles() ([]string, error) {
 	cmd := exec.Command("git", "status", "--porcelain")
 	output, err := cmd.Output()

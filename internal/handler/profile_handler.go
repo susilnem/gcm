@@ -3,16 +3,16 @@ package handler
 
 import (
 	"encoding/json"
-	"path/filepath"
-	"os"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/urfave/cli/v2"
 )
 
 type Profile struct {
-	Name     string  `json:"name"`
-	Email    string  `json:"email"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type ProfileStore struct {

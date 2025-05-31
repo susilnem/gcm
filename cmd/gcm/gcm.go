@@ -11,8 +11,8 @@ import (
 func Execute() {
 	app := &cli.App{
 		Version: Version,
-		Name:  "gcm",
-		Usage: "Git Conventional Commit Manager",
+		Name:    "gcm",
+		Usage:   "Git Conventional Commit Manager",
 		Commands: []*cli.Command{
 			{
 				Name:    "add",
@@ -39,51 +39,51 @@ func Execute() {
 				Action:  handler.ForcePushChanges,
 			},
 			{
-				Name:   "show",
+				Name:    "show",
 				Aliases: []string{"s"},
-				Usage:  "Show the last commit message",
-				Action: handler.ShowTypeRecommendations,
+				Usage:   "Show the last commit message",
+				Action:  handler.ShowTypeRecommendations,
 			},
 			{
-				Name: "diff",
+				Name:    "diff",
 				Aliases: []string{"d"},
-				Usage: "Show the diff of staged changes",
-				Action: handler.ShowDiff,
+				Usage:   "Show the diff of staged changes",
+				Action:  handler.ShowDiff,
 			},
 			// Profile management Commands
 			{
-				Name:    "profile",
-				Usage:   "Manage Git user profiles",
+				Name:  "profile",
+				Usage: "Manage Git user profiles",
 				Subcommands: []*cli.Command{
 					{
-						Name:    "add",
-						Usage: "Add a new profile(name, username, email)",
+						Name:      "add",
+						Usage:     "Add a new profile(name, username, email)",
 						ArgsUsage: "[profile-name] [user-name] [email]",
-						Action:  handler.AddProfile,
+						Action:    handler.AddProfile,
 					},
 					{
-						Name:    "list",
-						Usage:   "List all profiles",
-						Action:  handler.ListProfiles,
+						Name:   "list",
+						Usage:  "List all profiles",
+						Action: handler.ListProfiles,
 					},
 					{
-						Name:    "use",
-						Usage:   "Switch to a profile",
+						Name:      "use",
+						Usage:     "Switch to a profile",
 						ArgsUsage: "[profile_name]",
 						Flags: []cli.Flag{
 							&cli.BoolFlag{
-								Name:    "global",
-								Usage: "Apply profile globally",
+								Name:        "global",
+								Usage:       "Apply profile globally",
 								DefaultText: "false",
 							},
 						},
 						Action: handler.UseProfile,
 					},
 					{
-						Name: "remove",
-						Usage: "Remove a profile",
+						Name:      "remove",
+						Usage:     "Remove a profile",
 						ArgsUsage: "[profile_name]",
-						Action: handler.RemoveProfile,
+						Action:    handler.RemoveProfile,
 					},
 				},
 			},

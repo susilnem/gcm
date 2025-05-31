@@ -39,7 +39,6 @@ func AddFiles(c *cli.Context) error {
 	return RunGitCommand(append([]string{"add"}, files...)...)
 }
 
-
 // Create Commit
 func CreateCommit(c *cli.Context) error {
 	var commitType string
@@ -86,7 +85,6 @@ func ForcePushChanges(c *cli.Context) error {
 	return RunGitCommand("push", "--force")
 }
 
-
 // Show commit type recommendations
 var typeDescriptions = map[string]string{
 	"feat":     "A new feature",
@@ -101,7 +99,6 @@ var typeDescriptions = map[string]string{
 	"build":    "Changes that affect the build system or external dependencies",
 	"revert":   "Reverts a previous commit",
 }
-
 
 func ShowTypeRecommendations(c *cli.Context) error {
 	fmt.Println("Commit Type Recommendations:")
