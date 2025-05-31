@@ -50,6 +50,43 @@ func Execute() {
 				Usage: "Show the diff of staged changes",
 				Action: handler.ShowDiff,
 			},
+			// Profile management Commands
+			{
+				Name:    "profile",
+				Usage:   "Manage Git user profiles",
+				Subcommands: []*cli.Command{
+					{
+						Name:    "add",
+						Usage: "Add a new profile(name, username, email)",
+						ArgsUsage: "[profile-name] [user-name] [email]",
+						Action:  handler.AddProfile,
+					},
+					{
+						Name:    "list",
+						Usage:   "List all profiles",
+						Action:  handler.ListProfiles,
+					},
+					{
+						Name:    "use",
+						Usage:   "Switch to a profile",
+						ArgsUsage: "[profile_name]",
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name:    "global",
+								Usage: "Apply profile globally",
+								DefaultText: "false",
+							},
+						},
+						Action: handler.UseProfile,
+					},
+					{
+						Name: "remove",
+						Usage: "Remove a profile",
+						ArgsUsage: "[profile_name]",
+						Action: handler.RemoveProfile,
+					},
+				},
+			},
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
