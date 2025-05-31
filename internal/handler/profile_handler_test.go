@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -45,14 +46,7 @@ func TestLoadProfiles(t *testing.T) {
 	}
 
 	// Test with a valid profile file
-	content := `{
-		"profiles": {
-			"work": {
-				"name": "John Doe",
-				"email": "john@work.com",
-			}
-		}
-	}`
+	content := `{"profiles":{"work":{"name":"John Doe","email":"john@work.com"}}}`
 	_ = setupTestProfileFile(t, content)
 
 	store, err = LoadProfiles()
@@ -76,9 +70,15 @@ func TestLoadProfiles(t *testing.T) {
 func TestAddProfile(t *testing.T) {
 	// Setup a temporary profile file
 	profilePath := setupTestProfileFile(t, "")
+	// Setup the CLI context with appropriate flags
+	set := flag.NewFlagSet("test", 0)
+	set.String("profile", "work", "")
+	set.String("name", "John Doe", "")
+	set.String("email", "john@work.com", "")
+	set.Parse([]string{"work", "John Doe", "john@work.com"})
 
 	app := cli.NewApp()
-	ctx := cli.NewContext(app, &cli.StringSliceFlag{Value: cli.NewStringSlice("work", "John Doe", "john@work.com")}, nil)
+	ctx := cli.NewContext(app, set, nil)
 
 	err := AddProfile(ctx)
 	if err != nil {
@@ -112,11 +112,17 @@ func TestAddDuplicateProfile(t *testing.T) {
 	content := `{"profiles":{"work":{"name":"John Doe","email":"john@work.com"}}}`
 	setupTestProfileFile(t, content)
 
+	set := flag.NewFlagSet("test", 0)
+	set.String("profile", "work", "")
+	set.String("name", "John Doe", "")
+	set.String("email", "john@work.com", "")
+	set.Parse([]string{"work", "John Doe", "john@work.com"})
+
 	app := cli.NewApp()
-	ctx := cli.NewContext(app, &cli.StringSliceFlag{Value: cli.NewStringSlice("work", "John Doe", "jane@work,com")}, nil)
+	ctx := cli.NewContext(app, set, nil)
 
 	err := AddProfile(ctx)
-	if err == nil || err.Error() != "Profile 'work' already exists" {
+	if err == nil || err.Error() != "profile 'work' already exists" {
 		t.Fatalf("Expected error for duplicate profile, got %v", err)
 	}
 }
@@ -126,8 +132,15 @@ func TestRemoveProfile(t *testing.T) {
 	content := `{"profiles":{"work":{"name":"John Doe","email":"john@work.com"}}}`
 	setupTestProfileFile(t, content)
 
+	set := flag.NewFlagSet("test", 0)
+	set.String("profile", "work", "")
+	set.String("name", "John Doe", "")
+	set.String("email", "john@work.com", "")
+	set.Parse([]string{"work", "John Doe", "john@work.com"})
+
 	app := cli.NewApp()
-	ctx := cli.NewContext(app, &cli.StringSliceFlag{Value: cli.NewStringSlice("work")}, nil)
+	ctx := cli.NewContext(app, set, nil)
+
 	err := RemoveProfile(ctx)
 
 	if err != nil {
