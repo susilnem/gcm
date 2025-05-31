@@ -82,6 +82,11 @@ func AddProfile(c *cli.Context) error {
 	if profileName == "" || userName == "" || email == "" {
 		return fmt.Errorf("profile name, username, and email are required")
 	}
+
+	if !ValidEmail(email) {
+		return fmt.Errorf("invalid email address: %s", email)
+	}
+
 	store, err := LoadProfiles()
 	if err != nil {
 		return fmt.Errorf("failed to load profiles: %w", err)

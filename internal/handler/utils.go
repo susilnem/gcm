@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"net/mail"
 	"os"
 	"os/exec"
 	"strings"
@@ -32,4 +33,9 @@ func getChangedFiles() ([]string, error) {
 		}
 	}
 	return files, nil
+}
+
+func ValidEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
