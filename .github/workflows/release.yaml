@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -26,6 +28,27 @@ jobs:
       - name: Get version from tag
         id: version
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        id: changelog
+        with:
+          args: --latest --strip header all
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Get contributors
+        id: contributors
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            RANGE="$PREV_TAG..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+          CONTRIBUTORS=$(git log $RANGE --format='%an' | sort -u | sed 's/^/- /' | tr '\n' ' ' 2>/dev/null)
+          echo "list=$CONTRIBUTORS" >> $GITHUB_OUTPUT 2>/dev/null || true
 
       - name: Build multi-platform binaries
         run: |
@@ -49,9 +72,9 @@ jobs:
           tag_name: ${{ github.ref }}
           name: v${{ steps.version.outputs.version }}
           body: |
-            ## What's Changed
-            - Version ${{ steps.version.outputs.version }} release
-            - Multi-platform binaries attached
+            ${{ steps.changelog.outputs.content }}
+
+            **Contributors:** ${{ steps.contributors.outputs.list }}
           files: |
             dist/*
           draft: false
