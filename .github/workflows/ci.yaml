@@ -1,4 +1,4 @@
-name: CI test pipeline
+name: CI Test Pipeline
 
 on:
   push:
@@ -17,17 +17,13 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write # Required for Codecov to comment on pull requests
+  pull-requests: write
+  security-events: write
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  lint:
+    name: Lint and Pre-commit
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ['1.21', '1.22', '1.23', '1.24']
-      fail-fast: false
-
     steps:
       - name: Checkout code
         uses: actions/checkout@main
@@ -35,14 +31,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version-file: "go.mod"
           cache: true
           cache-dependency-path: go.mod
 
       - name: Install dependencies
-        run: |
-          go mod verify
-          go mod download
+        run: go mod tidy
 
       - name: Run pre-commit hooks
         uses: pre-commit/action@main
@@ -53,23 +47,68 @@ jobs:
         uses: golangci/golangci-lint-action@v7
         with:
           version: v2.1
+          args: --timeout=5m
+
+  test:
+    name: Test with Go ${{ matrix.go-version }}
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.23', '1.24']
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: go.mod
+
+      - name: Install dependencies
+        run: go mod tidy
 
       - name: Run tests with coverage
         run: |
-          go test -v -covermode=count -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out -o=coverage.txt
-          cat coverage.txt
+          go test -covermode=count -coverprofile=coverage.out ./...
 
-      - name: Upload coverage report
+      - name: Upload coverage report to Codecov
+        if: matrix.go-version == '1.24' && !cancelled()
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.out
           token: ${{ secrets.CODECOV_TOKEN }}
+          flags: go-1.24
           fail_ci_if_error: true
-          verbose: true
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
+        if: matrix.go-version == '1.24' && !cancelled()
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  codequalitycheck:
+    name: CodeQL Analysis
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go
+          queries: security-and-quality
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
