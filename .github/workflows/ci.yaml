@@ -1,4 +1,4 @@
-name: CI test
+name: CI test pipeline
 
 on:
   push:
@@ -16,28 +16,60 @@ on:
   workflow_dispatch:
 
 permissions:
-    contents: read
+  contents: read
+  pull-requests: write # Required for Codecov to comment on pull requests
 
 jobs:
-  precommitcheck:
-    name: Pre-commit check
+  build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.21', '1.22', '1.23', '1.24']
+      fail-fast: false
 
     steps:
-      - uses: actions/checkout@main
-      - uses: pre-commit/action@main
+      - name: Checkout code
+        uses: actions/checkout@main
 
-      - name: Setup GO
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: "go.mod"
+          go-version: ${{ matrix.go-version }}
+          cache: true
+          cache-dependency-path: go.mod
 
-      - name: Dependency check
+      - name: Install dependencies
         run: |
           go mod verify
           go mod download
 
-      - name: GO lint
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@main
+        with:
+          extra_args: --all-files
+
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.0
+          version: v2.1
+
+      - name: Run tests with coverage
+        run: |
+          go test -v -covermode=count -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out -o=coverage.txt
+          cat coverage.txt
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
