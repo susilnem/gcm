@@ -18,25 +18,33 @@ func Execute() {
 				Name:    "add",
 				Aliases: []string{"a"},
 				Usage:   "Stage files for commit",
-				Action:  handler.AddFiles,
+				Action: func(c *cli.Context) error {
+					return handler.AddFiles(c, handler.DefaultGitService)
+				},
 			},
 			{
 				Name:    "commit",
 				Aliases: []string{"c"},
 				Usage:   "Create a conventional commit",
-				Action:  handler.CreateCommit,
+				Action: func(c *cli.Context) error {
+					return handler.CreateCommit(c, handler.DefaultGitService)
+				},
 			},
 			{
 				Name:    "push",
 				Aliases: []string{"p"},
 				Usage:   "Push changes to remote",
-				Action:  handler.PushChanges,
+				Action: func(c *cli.Context) error {
+					return handler.PushChanges(c, handler.DefaultGitService)
+				},
 			},
 			{
 				Name:    "force-push",
 				Aliases: []string{"fp"},
 				Usage:   "Force push changes to remote",
-				Action:  handler.ForcePushChanges,
+				Action: func(c *cli.Context) error {
+					return handler.ForcePushChanges(c, handler.DefaultGitService)
+				},
 			},
 			{
 				Name:    "show",
@@ -48,7 +56,9 @@ func Execute() {
 				Name:    "diff",
 				Aliases: []string{"d"},
 				Usage:   "Show the diff of staged changes",
-				Action:  handler.ShowDiff,
+				Action: func(c *cli.Context) error {
+					return handler.ShowDiff(c, handler.DefaultGitService)
+				},
 			},
 			// Profile management Commands
 			{
@@ -77,7 +87,9 @@ func Execute() {
 								DefaultText: "false",
 							},
 						},
-						Action: handler.UseProfile,
+						Action: func(c *cli.Context) error {
+							return handler.UseProfile(c, handler.DefaultGitService)
+						},
 					},
 					{
 						Name:      "remove",

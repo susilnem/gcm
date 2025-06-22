@@ -130,7 +130,7 @@ func ListProfiles(c *cli.Context) error {
 }
 
 // UseProfile switches to a specified profile
-func UseProfile(c *cli.Context) error {
+func UseProfile(c *cli.Context, git GitService) error {
 	profileName := c.Args().Get(0)
 	isGlobal := c.Bool("global")
 
@@ -153,10 +153,10 @@ func UseProfile(c *cli.Context) error {
 		args = []string{"config", "--global"}
 	}
 
-	if err := RunGitCommand(append(args, "user.name", profile.Name)...); err != nil {
+	if err := git.RunGitCommand(append(args, "user.name", profile.Name)...); err != nil {
 		return fmt.Errorf("failed to set user.name: %w", err)
 	}
-	if err := RunGitCommand(append(args, "user.email", profile.Email)...); err != nil {
+	if err := git.RunGitCommand(append(args, "user.email", profile.Email)...); err != nil {
 		return fmt.Errorf("failed to set user.email: %w", err)
 	}
 

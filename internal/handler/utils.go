@@ -8,7 +8,9 @@ import (
 	"strings"
 )
 
-func RunGitCommand(args ...string) error {
+type RealGitService struct{}
+
+func (r *RealGitService) RunGitCommand(args ...string) error {
 	cmd := exec.Command("git", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -16,7 +18,7 @@ func RunGitCommand(args ...string) error {
 	return cmd.Run()
 }
 
-func getChangedFiles() ([]string, error) {
+func (r *RealGitService) getChangedFiles() ([]string, error) {
 	cmd := exec.Command("git", "status", "--porcelain")
 	output, err := cmd.Output()
 	if err != nil {
@@ -39,3 +41,5 @@ func ValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
 }
+
+var DefaultGitService GitService = &RealGitService{}

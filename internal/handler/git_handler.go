@@ -7,18 +7,23 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type GitService interface {
+	RunGitCommand(args ...string) error
+	getChangedFiles() ([]string, error)
+}
+
 var commitTypes = []string{
 	"feat", "fix", "docs", "style",
 	"refactor", "test", "chore", "perf",
 	"ci", "build", "revert",
 }
 
-func AddFiles(c *cli.Context) error {
+func AddFiles(c *cli.Context, git GitService) error {
 	files := c.Args().Slice()
 	if len(files) == 0 {
-		changedFiles, err := getChangedFiles()
+		changedFiles, err := git.getChangedFiles()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get changed files: %w", err)
 		}
 
 		var selectedFiles []string
@@ -27,20 +32,20 @@ func AddFiles(c *cli.Context) error {
 			Options: changedFiles,
 		}
 		if err := survey.AskOne(prompt, &selectedFiles); err != nil {
-			return err
+			return fmt.Errorf("failed to select files: %w", err)
 		}
 
 		if len(selectedFiles) == 0 {
 			fmt.Println("No files selected")
 			return nil
 		}
-		return RunGitCommand(append([]string{"add"}, selectedFiles...)...)
+		return git.RunGitCommand(append([]string{"add"}, selectedFiles...)...)
 	}
-	return RunGitCommand(append([]string{"add"}, files...)...)
+	return git.RunGitCommand(append([]string{"add"}, files...)...)
 }
 
 // Create Commit
-func CreateCommit(c *cli.Context) error {
+func CreateCommit(c *cli.Context, git GitService) error {
 	var commitType string
 	promptType := &survey.Select{
 		Message: "Select commit type:",
@@ -72,17 +77,17 @@ func CreateCommit(c *cli.Context) error {
 	}
 	commitMsg += ": " + message
 
-	return RunGitCommand("commit", "-m", commitMsg)
+	return git.RunGitCommand("commit", "-m", commitMsg)
 }
 
 // PushChanges handles git push
-func PushChanges(c *cli.Context) error {
-	return RunGitCommand("push")
+func PushChanges(c *cli.Context, git GitService) error {
+	return git.RunGitCommand("push")
 }
 
 // ForcePushChanges handles git push --force
-func ForcePushChanges(c *cli.Context) error {
-	return RunGitCommand("push", "--force")
+func ForcePushChanges(c *cli.Context, git GitService) error {
+	return git.RunGitCommand("push", "--force")
 }
 
 // Show commit type recommendations
@@ -109,6 +114,6 @@ func ShowTypeRecommendations(c *cli.Context) error {
 }
 
 // ShowDiff displays the diff of staged Changes
-func ShowDiff(c *cli.Context) error {
-	return RunGitCommand("diff", "--cached")
+func ShowDiff(c *cli.Context, git GitService) error {
+	return git.RunGitCommand("diff", "--cached")
 }
