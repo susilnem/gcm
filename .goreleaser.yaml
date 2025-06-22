@@ -1,0 +1,58 @@
+version: 2
+
+project_name: gcm
+
+before:
+  hooks:
+    - go mod tidy
+
+builds: [skip: true]
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+changelog:
+  sort: asc
+  use: github
+  format: "{{ .SHA }}: {{ .Message }}{{ with .AuthorUsername }} (@{{ . }}){{ end }}"
+  filters:
+    exclude:
+      - "merge conflict"
+      - Merge remote-tracking branch
+      - go mod tidy
+  groups:
+    - title: Dependency updates
+      regexp: "^.*\\(deps\\)*:+.*$"
+      order: 300
+    - title: "New Features"
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 100
+    - title: "Bug fixes"
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 200
+    - title: "Documentation updates"
+      regexp: "^.*docs[(\\w)]*:+.*$"
+      order: 400
+    - title: Other work
+      order: 9999
+
+release:
+  name_template: "v{{ .Version }}"
+  github:
+    owner: susilnem
+    name: Sushil Tiwari
+  draft: false
+  prerelease: auto
+  extra_files:
+    - glob: CHANGELOG.md
