@@ -51,7 +51,7 @@ release:
   name_template: "v{{ .Version }}"
   github:
     owner: susilnem
-    name: Sushil Tiwari
+    name: gcm
   draft: false
   prerelease: auto
   extra_files:
