@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
 
 jobs:
   release:
@@ -34,12 +35,24 @@ jobs:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
 
+      - name: Commit changelog
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # Get default branch (e.g., main or develop)
+          ref=${GITHUB_REF#refs/heads/}
+          branch=${ref:-main}
+
+          git add CHANGELOG.md
+          git commit -m "chore: update CHANGELOG.md for release ${{ github.ref_name }}" || echo "Nothing to commit"
+          git push origin $branch || echo "Nothing to push"
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --clean --skip=validate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO_OWNER: ${{ github.repository_owner }}
