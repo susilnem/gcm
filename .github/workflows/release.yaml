@@ -15,19 +15,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Required for changelog
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
           cache: true
-
-      - name: Get version from tag
-        id: version
-        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Generate changelog
         uses: orhun/git-cliff-action@v4
@@ -38,44 +34,15 @@ jobs:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
 
-      - name: Get contributors
-        id: contributors
-        run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -n "$PREV_TAG" ]; then
-            RANGE="$PREV_TAG..HEAD"
-          else
-            RANGE="HEAD"
-          fi
-          CONTRIBUTORS=$(git log $RANGE --format='%an' | sort -u | sed 's/^/- /' | tr '\n' ' ' 2>/dev/null)
-          echo "list=$CONTRIBUTORS" >> $GITHUB_OUTPUT 2>/dev/null || true
-
-      - name: Build multi-platform binaries
-        run: |
-          mkdir -p dist
-          for os in linux darwin windows; do
-            for arch in amd64; do
-              output="dist/gcm-${os}"
-              [ "$os" = "windows" ] && output+=".exe"
-              GOOS=$os GOARCH=$arch go build -ldflags="-X main.Version=${{ steps.version.outputs.version }}" -o $output ./cmd/gcm
-            done
-          done
-
-      - name: Generate checksums
-        run: |
-          cd dist
-          sha256sum * > checksums.txt
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          tag_name: ${{ github.ref }}
-          name: v${{ steps.version.outputs.version }}
-          body: |
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO_NAME: ${{ github.event.repository.name }}
+          RELEASE_BODY: |
             ${{ steps.changelog.outputs.content }}
-
-            **Contributors:** ${{ steps.contributors.outputs.list }}
-          files: |
-            dist/*
-          draft: false
-          prerelease: ${{ contains(github.ref, '-') }}
