@@ -6,7 +6,18 @@ before:
   hooks:
     - go mod tidy
 
-builds: [skip: true]
+builds:
+  - id: gcm
+    main: ./main.go
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -X main.Version={{.Version}}
 
 archives:
   - formats: [tar.gz]
